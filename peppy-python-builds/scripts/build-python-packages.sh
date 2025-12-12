@@ -72,6 +72,10 @@ pip install pyscreenshot==$PYSCREENSHOT_VERSION
 echo "[+] Installing requests..."
 pip install requests
 
+# Install websocket-client (required for python-socketio websocket transport)
+echo "[+] Installing websocket-client..."
+pip install websocket-client
+
 #
 # Step 3: Copy installed packages to packages directory
 #
@@ -84,7 +88,7 @@ echo "[+] Site packages: $SITE_PACKAGES"
 
 # Copy all installed packages (excluding pip, setuptools, wheel, pkg_resources)
 cd "$SITE_PACKAGES"
-for pkg in pygame socketio engineio PIL cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna; do
+for pkg in pygame socketio engineio PIL cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna websocket; do
   if [ -d "$pkg" ]; then
     echo "  Copying $pkg/"
     cp -r "$pkg" "$PACKAGES_DIR/"
@@ -92,7 +96,7 @@ for pkg in pygame socketio engineio PIL cairosvg pyscreenshot requests urllib3 c
 done
 
 # Also copy dist-info directories for package metadata
-for pkg in pygame python_socketio python_engineio pillow cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna; do
+for pkg in pygame python_socketio python_engineio pillow cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna websocket_client; do
   for info in ${pkg}*.dist-info; do
     if [ -d "$info" ]; then
       echo "  Copying $info/"
