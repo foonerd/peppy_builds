@@ -55,11 +55,11 @@ make -j$(nproc)
 
 # The library is built - copy to output
 echo "[+] Copying library to output..."
-cp -v src/.libs/libpeppyalsa.so* "$OUTPUT_DIR/"
+cp -v .libs/libpeppyalsa.so* "$OUTPUT_DIR/"
 
 # Create a tarball of the library for easy extraction
 echo "[+] Creating library tarball..."
-cd src/.libs
+cd .libs
 tar -czf "$OUTPUT_DIR/peppyalsa-lib.tar.gz" libpeppyalsa.so*
 cd "$BUILD_BASE/peppyalsa"
 
