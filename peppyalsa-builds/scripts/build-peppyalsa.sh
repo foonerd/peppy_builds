@@ -47,6 +47,9 @@ libtoolize --force
 autoconf
 automake --add-missing --force-missing
 
+# Ensure configure is executable
+chmod +x configure
+
 # Configure with static fftw3 linking
 # CRITICAL: Volumio plugins require static linking - no upstream dependencies
 #
