@@ -47,8 +47,27 @@ libtoolize --force
 autoconf
 automake --add-missing --force-missing
 
-# Configure
+# Configure with static fftw3 linking
+# CRITICAL: Volumio plugins require static linking - no upstream dependencies
+#
+# Libtool often ignores -Bstatic flags, so we need to:
+# 1. Find the static library location
+# 2. Pass it directly to the linker
+FFTW3_STATIC=$(find /usr -name 'libfftw3.a' 2>/dev/null | head -1)
+if [ -z "$FFTW3_STATIC" ]; then
+  echo "[!] ERROR: libfftw3.a not found - cannot build with static linking"
+  exit 1
+fi
+echo "[+] Found static fftw3: $FFTW3_STATIC"
+
+# Configure normally first
 ./configure --prefix=/usr/local
+
+# Patch ALL Makefiles to use static fftw3
+# Replace -lfftw3 with the full path to static library
+echo "[+] Patching Makefiles for static fftw3 linking..."
+find . -name 'Makefile' -exec sed -i "s|-lfftw3|$FFTW3_STATIC|g" {} \;
+find . -name '*.la' -exec sed -i "s|-lfftw3|$FFTW3_STATIC|g" {} \; 2>/dev/null || true
 
 # Build
 make -j$(nproc)
@@ -96,6 +115,16 @@ ls -lh "$OUTPUT_DIR"
 echo ""
 echo "[+] Library info:"
 file "$OUTPUT_DIR/libpeppyalsa.so"* 2>/dev/null || true
+
+echo ""
+echo "[+] Checking library dependencies (should NOT show libfftw3):"
+ldd "$OUTPUT_DIR/libpeppyalsa.so" 2>/dev/null || true
+if ldd "$OUTPUT_DIR/libpeppyalsa.so" 2>/dev/null | grep -q fftw3; then
+  echo "[!] WARNING: libfftw3 is dynamically linked - this will break on Volumio!"
+  exit 1
+else
+  echo "[+] OK: libfftw3 is statically linked"
+fi
 
 echo ""
 echo "[+] Client info:"
