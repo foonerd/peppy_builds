@@ -95,6 +95,12 @@ for pkg in pygame socketio engineio PIL cairosvg pyscreenshot requests urllib3 c
   fi
 done
 
+# Copy pygame.libs (bundled SDL2 libraries from manylinux wheel)
+if [ -d "pygame.libs" ]; then
+  echo "  Copying pygame.libs/ (bundled SDL2)"
+  cp -r "pygame.libs" "$PACKAGES_DIR/"
+fi
+
 # Also copy dist-info directories for package metadata
 for pkg in pygame python_socketio python_engineio pillow cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna websocket_client; do
   for info in ${pkg}*.dist-info; do
@@ -176,3 +182,13 @@ du -sh "$OUTPUT_DIR/$TARBALL_NAME"
 
 # Deactivate virtual environment
 deactivate
+
+# Verify pygame.libs was included
+echo ""
+echo "[+] Verifying bundled SDL2 libraries..."
+if [ -d "$PACKAGES_DIR/pygame.libs" ]; then
+  echo "  pygame.libs found:"
+  ls -la "$PACKAGES_DIR/pygame.libs/"
+else
+  echo "  WARNING: pygame.libs not found - pygame may fail to load on systems without system SDL2"
+fi
