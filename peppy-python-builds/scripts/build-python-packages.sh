@@ -101,6 +101,12 @@ if [ -d "pygame.libs" ]; then
   cp -r "pygame.libs" "$PACKAGES_DIR/"
 fi
 
+# Copy pillow.libs (bundled image libraries from manylinux wheel)
+if [ -d "pillow.libs" ]; then
+  echo "  Copying pillow.libs/ (bundled image libs)"
+  cp -r "pillow.libs" "$PACKAGES_DIR/"
+fi
+
 # Also copy dist-info directories for package metadata
 for pkg in pygame python_socketio python_engineio pillow cairosvg pyscreenshot requests urllib3 certifi charset_normalizer idna websocket_client; do
   for info in ${pkg}*.dist-info; do
@@ -191,4 +197,14 @@ if [ -d "$PACKAGES_DIR/pygame.libs" ]; then
   ls -la "$PACKAGES_DIR/pygame.libs/"
 else
   echo "  WARNING: pygame.libs not found - pygame may fail to load on systems without system SDL2"
+fi
+
+# Verify pillow.libs was included
+echo ""
+echo "[+] Verifying bundled image libraries..."
+if [ -d "$PACKAGES_DIR/pillow.libs" ]; then
+  echo "  pillow.libs found:"
+  ls -la "$PACKAGES_DIR/pillow.libs/"
+else
+  echo "  WARNING: pillow.libs not found - Pillow may fail to load on systems without system image libs"
 fi
