@@ -33,7 +33,8 @@ python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
 # Upgrade pip and install wheel
-pip install --upgrade pip wheel setuptools
+# Pin setuptools < 70 to avoid distutils.ccompiler.spawn issue with pygame build
+pip install --upgrade pip wheel "setuptools<70"
 
 #
 # Step 2: Install packages with compilation
@@ -50,8 +51,13 @@ CAIROSVG_VERSION="2.7.1"
 PYSCREENSHOT_VERSION="3.1"
 
 # Install packages
-echo "[+] Installing pygame==$PYGAME_VERSION..."
-pip install pygame==$PYGAME_VERSION
+echo "[+] Installing pygame==$PYGAME_VERSION (building from source with SIMD optimizations)..."
+# Build from source to enable NEON (ARM) / SSE/AVX (x86) optimizations
+# Pre-built manylinux wheels disable these for maximum compatibility
+# Use --no-build-isolation to use our pinned setuptools (pip's isolated build env ignores it)
+export PYGAME_DETECT_AVX2=1
+pip install cython  # pygame build dependency
+pip install pygame==$PYGAME_VERSION --no-binary pygame --no-build-isolation
 
 echo "[+] Installing python-socketio==$SOCKETIO_VERSION..."
 pip install python-socketio==$SOCKETIO_VERSION
