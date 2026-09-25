@@ -113,6 +113,8 @@ if [[ "$VERBOSE" -eq 1 ]]; then
     -e "ARCH=$ARCH" \
     -e "LIB_PATH=$LIB_PATH" \
     -e "EXTRA_CFLAGS=$EXTRA_CFLAGS" \
+    -e "PEPPYALSA_REPO=${PEPPYALSA_REPO:-}" \
+    -e "PEPPYALSA_REF=${PEPPYALSA_REF:-}" \
     "$IMAGE_NAME" \
     bash /build/scripts/build-peppyalsa.sh
 else
@@ -122,6 +124,8 @@ else
     -e "ARCH=$ARCH" \
     -e "LIB_PATH=$LIB_PATH" \
     -e "EXTRA_CFLAGS=$EXTRA_CFLAGS" \
+    -e "PEPPYALSA_REPO=${PEPPYALSA_REPO:-}" \
+    -e "PEPPYALSA_REF=${PEPPYALSA_REF:-}" \
     "$IMAGE_NAME" \
     bash /build/scripts/build-peppyalsa.sh 2>&1 | grep -E "^\[|^Error|^Building|warning:"
 fi

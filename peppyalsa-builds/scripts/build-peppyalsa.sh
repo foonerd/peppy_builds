@@ -20,14 +20,27 @@ mkdir -p "$OUTPUT_DIR"
 #
 # Step 1: Clone peppyalsa from GitHub
 #
-echo "[+] Cloning peppyalsa from GitHub..."
+# PEPPYALSA_REPO / PEPPYALSA_REF select the source. The defaults build
+# upstream master; a fork branch or a commit hash pins the build.
+PEPPYALSA_REPO="${PEPPYALSA_REPO:-https://github.com/project-owner/peppyalsa.git}"
+PEPPYALSA_REF="${PEPPYALSA_REF:-master}"
+echo "[+] Cloning peppyalsa: $PEPPYALSA_REPO @ $PEPPYALSA_REF"
 cd "$BUILD_BASE"
 
 if [ ! -d "peppyalsa" ]; then
-  git clone --depth 1 https://github.com/project-owner/peppyalsa.git
+  if [[ "$PEPPYALSA_REF" =~ ^[0-9a-f]{7,40}$ ]]; then
+    git init -q peppyalsa
+    git -C peppyalsa remote add origin "$PEPPYALSA_REPO"
+    git -C peppyalsa fetch -q --depth 1 origin "$PEPPYALSA_REF"
+    git -C peppyalsa checkout -q FETCH_HEAD
+  else
+    git clone -q --depth 1 --branch "$PEPPYALSA_REF" "$PEPPYALSA_REPO" peppyalsa
+  fi
 fi
 
 cd peppyalsa
+PEPPYALSA_COMMIT=$(git rev-parse HEAD)
+echo "[+] Source commit: $PEPPYALSA_COMMIT"
 
 #
 # Step 2: Build peppyalsa library
@@ -41,11 +54,11 @@ if [ -n "$EXTRA_CFLAGS" ]; then
   export CXXFLAGS="$EXTRA_CFLAGS -fPIC -O2"
 fi
 
-# Run autotools
-aclocal
-libtoolize --force
-autoconf
-automake --add-missing --force-missing
+# Regenerate the build system in full. The repository ships a configure
+# generated with an older libtool; running aclocal/autoconf on top of it
+# keeps that libtool version and make fails with a version mismatch on
+# images whose libtool is newer.
+autoreconf -fiv
 
 # Ensure configure is executable
 chmod +x configure
@@ -84,6 +97,16 @@ echo "[+] Creating library tarball..."
 cd .libs
 tar -czf "$OUTPUT_DIR/peppyalsa-lib.tar.gz" libpeppyalsa.so*
 cd "$BUILD_BASE/peppyalsa"
+
+# Record what was built so the shipped library is traceable
+{
+  echo "repo=$PEPPYALSA_REPO"
+  echo "ref=$PEPPYALSA_REF"
+  echo "commit=$PEPPYALSA_COMMIT"
+  echo "arch=$ARCH"
+  echo "cflags=${EXTRA_CFLAGS:-}"
+  echo "built=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "$OUTPUT_DIR/BUILD_INFO"
 
 #
 # Step 3: Build peppyalsa-client

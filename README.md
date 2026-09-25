@@ -124,19 +124,39 @@ Pi Zero/Pi 1 (ARMv6). For ARMv6 support, use the Docker-built armv6 package
 | arm64 (Pi 3/4/5 64-bit) | Native Pi build | out/arm64/ |
 | amd64 (x86_64) | Docker matrix | out/amd64/ |
 
-## Assembling the Plugin
+## Building peppyalsa from a fork or a pinned commit
 
-After building all dependencies, copy the outputs to the plugin:
+The peppyalsa build clones upstream master by default. Two environment
+variables select another source; a branch name or a commit hash both work:
 
 ```bash
-# For each architecture (example: armhf)
-cp peppyalsa-builds/out/armhf/peppyalsa-lib.tar.gz \
-   ../peppy_plugin_v3/dependencies/armhf/
-cp peppyalsa-builds/out/armhf/peppyalsa-client \
-   ../peppy_plugin_v3/dependencies/armhf/
-cp peppy-python-builds/out/armhf/peppy-python-packages.tar.gz \
-   ../peppy_plugin_v3/dependencies/armhf/
+PEPPYALSA_REPO=https://github.com/<owner>/peppyalsa.git \
+PEPPYALSA_REF=<branch-or-commit> \
+./docker/run-docker-peppyalsa.sh armv6
 ```
+
+Every build writes `out/<arch>/BUILD_INFO` with the repository, ref, commit,
+architecture, CFLAGS and build time of the library in that directory.
+
+## Assembling the Plugin
+
+The plugin keeps native libraries under `lib/<arch>/`. Copy the shared
+library files from each build output into the matching plugin directory:
+
+| Build output | Plugin directory |
+|--------------|------------------|
+| out/armv6/   | lib/arm/         |
+| out/armhf/   | lib/armv7/       |
+| out/arm64/   | lib/armv8/       |
+| out/amd64/   | lib/x64/         |
+
+```bash
+# Example: armv6 build into the plugin's lib/arm and bin/arm
+cp peppyalsa-builds/out/armv6/libpeppyalsa.so* ../peppy_screensaver/lib/arm/
+cp peppyalsa-builds/out/armv6/peppyalsa-client  ../peppy_screensaver/bin/arm/
+```
+
+The `peppyalsa-client` binary follows the same mapping into `bin/<arch>/`.
 
 ## Package Versions
 
