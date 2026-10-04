@@ -1,3 +1,9 @@
+> **This project is closed (October 2026) and this repository is archived.**
+>
+> These were the prebuilt libraries PeppyMeter Screensaver installed. Its successor, **[Glass](https://github.com/foonerd/glass)**, ships its own binaries with each of its releases, so nothing here is built any more. Releases and support continue in [Glass](https://github.com/foonerd/glass).
+>
+> The repository stays readable for reference.
+
 # Peppy Screensaver Build System
 
 This directory contains Docker-based build systems for the peppy_screensaver
